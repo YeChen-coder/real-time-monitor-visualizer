@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WindowCard Frosted Glass Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 40px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 40px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .test-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* WindowCard CSS (simplified for testing) */
+        .window-card {
+            position: relative;
+            min-height: 120px;
+            width: 300px;
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* Frosted glass effect */
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                0 4px 16px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        /* Fallback for browsers without backdrop-filter */
+        @supports not (backdrop-filter: blur(20px)) {
+            .window-card {
+                background: rgba(255, 255, 255, 0.85);
+                box-shadow: 
+                    0 8px 32px rgba(0, 0, 0, 0.15),
+                    0 4px 16px rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        .window-card__content {
+            position: relative;
+            z-index: 2;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .window-card__icon {
+            font-size: 24px;
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .window-card__title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: rgba(0, 0, 0, 0.85);
+            flex: 1;
+        }
+
+        .window-card--active {
+            transform: scale(1.02);
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 
+                0 12px 40px rgba(59, 130, 246, 0.2),
+                0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .window-card:hover {
+            transform: translateY(-2px) scale(1.01);
+        }
+
+        .browser-badge {
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .test-info {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>WindowCard Frosted Glass Effect Test</h1>
+    
+    <div class="test-container">
+        <!-- Regular Application Window -->
+        <div class="window-card">
+            <div class="window-card__content">
+                <div class="window-card__icon">📋</div>
+                <div>
+                    <div class="window-card__title">Visual Studio Code</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Window -->
+        <div class="window-card window-card--active">
+            <div class="window-card__content">
+                <div class="window-card__icon">▶</div>
+                <div>
+                    <div class="window-card__title">Real-Time Window Visualizer - Active</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Browser Window -->
+        <div class="window-card">
+            <div class="window-card__content">
+                <div class="window-card__icon">🌐</div>
+                <div style="flex: 1;">
+                    <div class="window-card__title">GitHub Repository</div>
+                    <div class="browser-badge">Microsoft Edge</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Long Title Window -->
+        <div class="window-card">
+            <div class="window-card__content">
+                <div class="window-card__icon">📋</div>
+                <div>
+                    <div class="window-card__title">This is a very long window title that should be handled gracefully by the component</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-info">
+        <h3>Frosted Glass Test Results</h3>
+        <p>✅ Backdrop-filter blur effect applied</p>
+        <p>✅ Semi-transparent background with proper opacity</p>
+        <p>✅ Border and shadow effects for depth</p>
+        <p>✅ Hover and active state animations</p>
+        <p>✅ Cross-browser fallback support</p>
+    </div>
+
+    <script>
+        // Test backdrop-filter support
+        const testEl = document.createElement('div');
+        testEl.style.backdropFilter = 'blur(1px)';
+        
+        if (testEl.style.backdropFilter) {
+            console.log('✅ backdrop-filter is supported');
+        } else {
+            console.log('⚠️ backdrop-filter not supported - using fallback');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack Layout Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 40px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Stack Layout CSS (simplified for testing) */
+        .stack-layout {
+            position: relative;
+            width: 100%;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stack-layout__container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stack-layout__window-wrapper {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform-origin: center center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .stack-layout__window-wrapper--active {
+            transform: translate(-50%, -50%) scale(1) !important;
+            z-index: 1000 !important;
+            opacity: 1 !important;
+        }
+
+        /* WindowCard styles */
+        .window-card {
+            position: relative;
+            min-height: 120px;
+            width: 300px;
+            border-radius: 16px;
+            overflow: hidden;
+            
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                0 4px 16px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .window-card--stack-active {
+            box-shadow: 
+                0 20px 60px rgba(59, 130, 246, 0.25),
+                0 12px 32px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            border-width: 2px;
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .window-card--stack-inactive {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .window-card__content {
+            position: relative;
+            z-index: 2;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .window-card__icon {
+            font-size: 24px;
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .window-card__title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: rgba(0, 0, 0, 0.85);
+            flex: 1;
+        }
+
+        .browser-badge {
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .stack-layout__info {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            font-size: 14px;
+            color: rgba(0, 0, 0, 0.7);
+            font-weight: 500;
+        }
+
+        .controls {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .controls button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin: 0 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .controls button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>Dynamic Stack Layout Test</h1>
+    
+    <div class="demo-container">
+        <div class="controls">
+            <button onclick="simulateActiveChange()">Change Active Window</button>
+            <button onclick="addWindow()">Add Window</button>
+            <button onclick="removeWindow()">Remove Window</button>
+        </div>
+
+        <div class="stack-layout">
+            <div class="stack-layout__container" id="stackContainer">
+                <!-- Windows will be dynamically added here -->
+            </div>
+            
+            <div class="stack-layout__info">
+                <span id="windowCount">5 windows</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let windows = [
+            { title: 'Visual Studio Code', active: false, isBrowser: false },
+            { title: 'GitHub Repository', active: false, isBrowser: true, browserName: 'Edge' },
+            { title: 'Real-Time Visualizer', active: true, isBrowser: false },
+            { title: 'Discord', active: false, isBrowser: false },
+            { title: 'YouTube - Music', active: false, isBrowser: true, browserName: 'Chrome' }
+        ];
+
+        function createWindowElement(window, index) {
+            const isActive = window.active;
+            const stackPosition = isActive ? 0 : index;
+            
+            // Calculate positioning
+            const scale = isActive ? 1 : (1 - Math.min(stackPosition * 0.08, 0.4));
+            const offsetX = isActive ? 0 : stackPosition * 40 * (1 + stackPosition * 0.1);
+            const offsetY = isActive ? 0 : stackPosition * 30 * (1 + stackPosition * 0.05);
+            const opacity = isActive ? 1 : (1 - Math.min(stackPosition * 0.15, 0.6));
+            const zIndex = isActive ? 1000 : (100 - stackPosition);
+
+            const wrapperDiv = document.createElement('div');
+            wrapperDiv.className = `stack-layout__window-wrapper ${isActive ? 'stack-layout__window-wrapper--active' : ''}`;
+            wrapperDiv.style.zIndex = zIndex;
+            wrapperDiv.style.transform = isActive 
+                ? `translate(-50%, -50%) scale(1)`
+                : `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) scale(${scale})`;
+            wrapperDiv.style.opacity = opacity;
+
+            const cardDiv = document.createElement('div');
+            cardDiv.className = `window-card ${isActive ? 'window-card--stack-active' : 'window-card--stack-inactive'}`;
+            
+            cardDiv.innerHTML = `
+                <div class="window-card__content">
+                    <div class="window-card__icon">
+                        ${isActive ? '▶' : window.isBrowser ? '🌐' : '📋'}
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="window-card__title">${window.title}</div>
+                        ${window.isBrowser ? `<div class="browser-badge">${window.browserName}</div>` : ''}
+                    </div>
+                </div>
+            `;
+
+            wrapperDiv.appendChild(cardDiv);
+            return wrapperDiv;
+        }
+
+        function renderWindows() {
+            const container = document.getElementById('stackContainer');
+            container.innerHTML = '';
+            
+            // Sort: inactive windows first, then active window (so active renders on top)
+            const sortedWindows = [...windows].sort((a, b) => {
+                if (a.active && !b.active) return 1;
+                if (!a.active && b.active) return -1;
+                return 0;
+            });
+
+            sortedWindows.forEach((window, index) => {
+                const element = createWindowElement(window, index);
+                container.appendChild(element);
+            });
+
+            document.getElementById('windowCount').textContent = `${windows.length} windows`;
+        }
+
+        function simulateActiveChange() {
+            // Find current active window and make it inactive
+            const currentActive = windows.findIndex(w => w.active);
+            if (currentActive >= 0) {
+                windows[currentActive].active = false;
+            }
+            
+            // Make a random inactive window active
+            const inactiveWindows = windows.filter((w, i) => !w.active);
+            if (inactiveWindows.length > 0) {
+                const randomIndex = Math.floor(Math.random() * inactiveWindows.length);
+                const windowToActivate = inactiveWindows[randomIndex];
+                windowToActivate.active = true;
+            }
+            
+            renderWindows();
+        }
+
+        function addWindow() {
+            const newWindows = [
+                { title: 'New Application', active: false, isBrowser: false },
+                { title: 'Stack Overflow', active: false, isBrowser: true, browserName: 'Firefox' },
+                { title: 'Terminal', active: false, isBrowser: false },
+                { title: 'Figma Design', active: false, isBrowser: true, browserName: 'Chrome' }
+            ];
+            
+            const randomWindow = newWindows[Math.floor(Math.random() * newWindows.length)];
+            windows.push({...randomWindow, title: `${randomWindow.title} ${windows.length + 1}`});
+            renderWindows();
+        }
+
+        function removeWindow() {
+            if (windows.length > 1) {
+                // Remove a random inactive window
+                const inactiveIndex = windows.findIndex(w => !w.active);
+                if (inactiveIndex >= 0) {
+                    windows.splice(inactiveIndex, 1);
+                } else {
+                    windows.pop(); // Remove last window if no inactive
+                }
+                renderWindows();
+            }
+        }
+
+        // Initial render
+        renderWindows();
+
+        // Auto-simulate active window changes
+        setInterval(() => {
+            if (Math.random() < 0.3) { // 30% chance every 3 seconds
+                simulateActiveChange();
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

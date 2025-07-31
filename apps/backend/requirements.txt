@@ -1,0 +1,14 @@
+# Real-time Window Visualizer Backend Dependencies
+# Python 3.8+ required
+
+# Window detection dependencies
+pygetwindow>=0.0.9
+pywin32>=306
+
+# WebSocket server dependencies
+websockets>=11.0.0
+# asyncio (built-in)
+
+# Development dependencies
+# pytest>=7.0.0
+# black>=22.0.0

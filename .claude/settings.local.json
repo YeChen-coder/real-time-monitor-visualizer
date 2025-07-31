@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(md-tree:*)"
+      "Bash(md-tree:*)",
+      "Bash(npm create:*)",
+      "Bash(npm install)",
+      "Bash(python:*)",
+      "Bash(timeout 10 npm run dev)",
+      "Bash(pip install:*)",
+      "Bash(timeout:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": []
   }

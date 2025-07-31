@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receding History Effect Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 40px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .demo-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .controls {
+            text-align: center;
+            margin: 30px 0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .controls button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .controls button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .controls button.active {
+            background: rgba(59, 130, 246, 0.6);
+            border-color: rgba(59, 130, 246, 0.8);
+        }
+
+        /* Enhanced Stack Layout CSS with History Effects */
+        .stack-layout {
+            position: relative;
+            width: 100%;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stack-layout__container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stack-layout__window-wrapper {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform-origin: center center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stack-layout__window-wrapper--active {
+            transform: translate(-50%, -50%) scale(1) !important;
+            z-index: 1000 !important;
+            opacity: 1 !important;
+        }
+
+        /* History-based visual age effects */
+        .stack-layout__window-wrapper--aged-recent {
+            filter: saturate(1.1) brightness(1.02);
+        }
+
+        .stack-layout__window-wrapper--aged-moderate {
+            filter: saturate(0.9) brightness(0.95);
+        }
+
+        .stack-layout__window-wrapper--aged-old {
+            filter: saturate(0.7) brightness(0.9) grayscale(0.1);
+        }
+
+        .stack-layout__window-wrapper--aged-ancient {
+            filter: saturate(0.5) brightness(0.85) grayscale(0.2);
+        }
+
+        /* WindowCard styles with enhanced history effects */
+        .window-card {
+            position: relative;
+            min-height: 130px;
+            width: 320px;
+            border-radius: 16px;
+            overflow: hidden;
+            
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                0 4px 16px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .window-card--stack-active {
+            box-shadow: 
+                0 20px 60px rgba(59, 130, 246, 0.25),
+                0 12px 32px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            border-width: 2px;
+            border-color: rgba(59, 130, 246, 0.4);
+            transform: scale(1.05);
+        }
+
+        .window-card--stack-inactive {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* History depth indicators */
+        .window-card--history-recent {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(59, 130, 246, 0.15);
+        }
+
+        .window-card--history-moderate {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .window-card--history-old {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .window-card--history-ancient {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .window-card__content {
+            position: relative;
+            z-index: 2;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .window-card__icon {
+            font-size: 28px;
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .window-card__info {
+            flex: 1;
+        }
+
+        .window-card__title {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 600;
+            color: rgba(0, 0, 0, 0.85);
+            line-height: 1.3;
+        }
+
+        .window-card__history {
+            font-size: 12px;
+            color: rgba(0, 0, 0, 0.6);
+            margin-top: 4px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .history-score {
+            background: rgba(59, 130, 246, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .browser-badge {
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .stack-layout__info {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            font-size: 14px;
+            color: rgba(0, 0, 0, 0.7);
+            font-weight: 500;
+        }
+
+        .test-history {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+        }
+
+        .test-history h3 {
+            margin-top: 0;
+            color: #fbbf24;
+        }
+
+        .history-entries {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .history-entry {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #10b981;
+        }
+
+        .history-entry__title {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .history-entry__stats {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            gap: 12px;
+        }
+
+        .legend {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 12px;
+        }
+
+        .legend-swatch {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .legend-swatch--recent { background: rgba(59, 130, 246, 0.4); }
+        .legend-swatch--moderate { background: rgba(255, 255, 255, 0.2); }
+        .legend-swatch--old { background: rgba(156, 163, 175, 0.3); }
+        .legend-swatch--ancient { background: rgba(75, 85, 99, 0.4); }
+    </style>
+</head>
+<body>
+    <h1>Receding History Effect Test</h1>
+    
+    <div class="demo-container">
+        <div class="controls">
+            <button onclick="simulateNormalUsage()" id="normalBtn">Normal Usage Pattern</button>
+            <button onclick="simulateHeavyUsage()" id="heavyBtn">Heavy Usage Pattern</button>
+            <button onclick="simulateSporadicUsage()" id="sporadicBtn">Sporadic Usage</button>
+            <button onclick="addAgedWindow()" id="agedBtn">Add Aged Window</button>
+            <button onclick="resetDemo()" id="resetBtn">Reset Demo</button>
+        </div>
+
+        <div class="stack-layout">
+            <div class="stack-layout__container" id="stackContainer">
+                <!-- Windows will be dynamically added here -->
+            </div>
+            
+            <div class="stack-layout__info">
+                <span id="windowCount">6 windows</span>
+                <span id="historyStatus">History tracking active</span>
+            </div>
+        </div>
+
+        <div class="test-history">
+            <h3>Window History Tracking</h3>
+            <div class="history-entries" id="historyEntries">
+                <!-- History entries will be populated here -->
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-swatch legend-swatch--recent"></div>
+                <span>Recent (0-25% aged)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-swatch legend-swatch--moderate"></div>
+                <span>Moderate (25-50% aged)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-swatch legend-swatch--old"></div>
+                <span>Old (50-75% aged)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-swatch legend-swatch--ancient"></div>
+                <span>Ancient (75%+ aged)</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let windows = [
+            { title: 'Visual Studio Code - Main.tsx', active: true, isBrowser: false },
+            { title: 'GitHub Repository', active: false, isBrowser: true, browserName: 'Edge' },
+            { title: 'Discord - General Chat', active: false, isBrowser: false },
+            { title: 'YouTube - Coding Music', active: false, isBrowser: true, browserName: 'Chrome' },
+            { title: 'Figma - UI Design', active: false, isBrowser: true, browserName: 'Firefox' },
+            { title: 'Terminal - Build Output', active: false, isBrowser: false }
+        ];
+
+        let windowHistory = new Map();
+        let currentTime = Date.now();
+
+        // Initialize window history
+        function initializeHistory() {
+            const now = currentTime;
+            windowHistory.set('Visual Studio Code - Main.tsx', { 
+                lastActiveTime: now, 
+                activationCount: 15,
+                title: 'Visual Studio Code - Main.tsx'
+            });
+            windowHistory.set('GitHub Repository', { 
+                lastActiveTime: now - 300000, // 5 minutes ago
+                activationCount: 8,
+                title: 'GitHub Repository'
+            });
+            windowHistory.set('Discord - General Chat', { 
+                lastActiveTime: now - 900000, // 15 minutes ago
+                activationCount: 3,
+                title: 'Discord - General Chat'
+            });
+            windowHistory.set('YouTube - Coding Music', { 
+                lastActiveTime: now - 1800000, // 30 minutes ago
+                activationCount: 12,
+                title: 'YouTube - Coding Music'
+            });
+            windowHistory.set('Figma - UI Design', { 
+                lastActiveTime: now - 2700000, // 45 minutes ago
+                activationCount: 5,
+                title: 'Figma - UI Design'
+            });
+            windowHistory.set('Terminal - Build Output', { 
+                lastActiveTime: now - 3600000, // 1 hour ago
+                activationCount: 2,
+                title: 'Terminal - Build Output'
+            });
+        }
+
+        function calculateRecencyScore(historyEntry, currentTime) {
+            const timeSinceActive = currentTime - historyEntry.lastActiveTime;
+            const maxAge = 3600000; // 1 hour
+            
+            const timeScore = Math.max(0, 1 - (timeSinceActive / maxAge));
+            const frequencyScore = Math.min(0.5, historyEntry.activationCount * 0.1);
+            
+            return Math.min(1, timeScore + frequencyScore);
+        }
+
+        function createWindowElement(window, index, positionData) {
+            const { scale, offsetX, offsetY, opacity, zIndex, recencyScore, visualAge } = positionData;
+            
+            // Determine age class
+            let ageClass = '';
+            if (visualAge <= 0.25) {
+                ageClass = 'stack-layout__window-wrapper--aged-recent';
+            } else if (visualAge <= 0.5) {
+                ageClass = 'stack-layout__window-wrapper--aged-moderate';
+            } else if (visualAge <= 0.75) {
+                ageClass = 'stack-layout__window-wrapper--aged-old';
+            } else {
+                ageClass = 'stack-layout__window-wrapper--aged-ancient';
+            }
+            
+            // Determine history class
+            let historyClass = '';
+            if (recencyScore >= 0.75) {
+                historyClass = 'window-card--history-recent';
+            } else if (recencyScore >= 0.5) {
+                historyClass = 'window-card--history-moderate';
+            } else if (recencyScore >= 0.25) {
+                historyClass = 'window-card--history-old';
+            } else {
+                historyClass = 'window-card--history-ancient';
+            }
+
+            const wrapperDiv = document.createElement('div');
+            wrapperDiv.className = `stack-layout__window-wrapper ${
+                window.active ? 'stack-layout__window-wrapper--active' : 'stack-layout__window-wrapper--inactive'
+            } ${!window.active ? ageClass : ''}`;
+            
+            wrapperDiv.style.zIndex = zIndex;
+            wrapperDiv.style.transform = window.active 
+                ? `translate(-50%, -50%) scale(1)`
+                : `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) scale(${scale})`;
+            wrapperDiv.style.opacity = opacity;
+            wrapperDiv.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+
+            const cardDiv = document.createElement('div');
+            cardDiv.className = `window-card ${
+                window.active ? 'window-card--stack-active' : 'window-card--stack-inactive'
+            } ${!window.active ? historyClass : ''}`;
+            
+            const historyEntry = windowHistory.get(window.title) || { activationCount: 0, lastActiveTime: currentTime };
+            const ageText = visualAge <= 0.25 ? 'Fresh' : 
+                           visualAge <= 0.5 ? 'Recent' : 
+                           visualAge <= 0.75 ? 'Aged' : 'Ancient';
+            
+            cardDiv.innerHTML = `
+                <div class="window-card__content">
+                    <div class="window-card__icon">
+                        ${window.active ? '▶' : window.isBrowser ? '🌐' : '📋'}
+                    </div>
+                    <div class="window-card__info">
+                        <div class="window-card__title">${window.title}</div>
+                        <div class="window-card__history">
+                            <span class="history-score">${Math.round(recencyScore * 100)}% fresh</span>
+                            <span>${ageText}</span>
+                            <span>${historyEntry.activationCount} uses</span>
+                        </div>
+                        ${window.isBrowser ? `<div class="browser-badge">${window.browserName}</div>` : ''}
+                    </div>
+                </div>
+            `;
+
+            wrapperDiv.appendChild(cardDiv);
+            return wrapperDiv;
+        }
+
+        function processWindowsForStack() {
+            const activeWindowIndex = windows.findIndex(w => w.active);
+            const activeWindow = activeWindowIndex >= 0 ? windows[activeWindowIndex] : null;
+            
+            // Sort inactive windows by recency
+            const inactiveWindows = windows
+                .filter((_, index) => index !== activeWindowIndex)
+                .map(window => {
+                    const historyEntry = windowHistory.get(window.title);
+                    const recencyScore = historyEntry ? calculateRecencyScore(historyEntry, currentTime) : 0;
+                    return { window, recencyScore };
+                })
+                .sort((a, b) => b.recencyScore - a.recencyScore)
+                .map(item => item.window);
+
+            const positionedWindows = [];
+
+            // Process inactive windows
+            inactiveWindows.forEach((window, index) => {
+                const historyEntry = windowHistory.get(window.title);
+                const recencyScore = historyEntry ? calculateRecencyScore(historyEntry, currentTime) : 0;
+                const stackPosition = index;
+                
+                // Enhanced positioning with history
+                const baseScaleReduction = Math.min(stackPosition * 0.08, 0.4);
+                const historyBonus = recencyScore * 0.05;
+                const scale = Math.max(0.6, 1 - baseScaleReduction + historyBonus);
+                
+                const baseOffsetX = 45;
+                const baseOffsetY = 35;
+                const historyMultiplier = 1 + (1 - recencyScore) * 0.5;
+                const offsetX = stackPosition * baseOffsetX * (1 + stackPosition * 0.12) * historyMultiplier;
+                const offsetY = stackPosition * baseOffsetY * (1 + stackPosition * 0.08) * historyMultiplier;
+                
+                const baseOpacityReduction = Math.min(stackPosition * 0.15, 0.6);
+                const historyOpacityBonus = recencyScore * 0.2;
+                const opacity = Math.max(0.4, 1 - baseOpacityReduction + historyOpacityBonus);
+                
+                const baseZIndex = 100 - stackPosition;
+                const historyZBonus = Math.floor(recencyScore * 10);
+                const zIndex = baseZIndex + historyZBonus;
+                
+                const visualAge = 1 - recencyScore;
+
+                positionedWindows.push({
+                    window,
+                    scale,
+                    offsetX,
+                    offsetY,
+                    opacity,
+                    zIndex,
+                    recencyScore,
+                    visualAge
+                });
+            });
+
+            // Add active window
+            if (activeWindow) {
+                const historyEntry = windowHistory.get(activeWindow.title);
+                const recencyScore = historyEntry ? calculateRecencyScore(historyEntry, currentTime) : 1;
+                
+                positionedWindows.push({
+                    window: activeWindow,
+                    scale: 1,
+                    offsetX: 0,
+                    offsetY: 0,
+                    opacity: 1,
+                    zIndex: 1000,
+                    recencyScore,
+                    visualAge: 0
+                });
+            }
+
+            return positionedWindows;
+        }
+
+        function renderWindows() {
+            const container = document.getElementById('stackContainer');
+            container.innerHTML = '';
+            
+            const positionedWindows = processWindowsForStack();
+
+            // Sort for rendering (inactive first, then active)
+            const sortedWindows = [...positionedWindows].sort((a, b) => {
+                if (a.window.active && !b.window.active) return 1;
+                if (!a.window.active && b.window.active) return -1;
+                return 0;
+            });
+
+            sortedWindows.forEach((item, index) => {
+                const element = createWindowElement(item.window, index, item);
+                container.appendChild(element);
+            });
+
+            document.getElementById('windowCount').textContent = `${windows.length} windows`;
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            const container = document.getElementById('historyEntries');
+            container.innerHTML = '';
+
+            // Sort by recency score
+            const sortedHistory = Array.from(windowHistory.entries())
+                .map(([title, entry]) => ({
+                    title,
+                    entry,
+                    recencyScore: calculateRecencyScore(entry, currentTime)
+                }))
+                .sort((a, b) => b.recencyScore - a.recencyScore);
+
+            sortedHistory.forEach(({ title, entry, recencyScore }) => {
+                const div = document.createElement('div');
+                div.className = 'history-entry';
+                
+                const timeSince = Math.round((currentTime - entry.lastActiveTime) / 60000);
+                const ageCategory = recencyScore >= 0.75 ? 'Recent' :
+                                   recencyScore >= 0.5 ? 'Moderate' :
+                                   recencyScore >= 0.25 ? 'Old' : 'Ancient';
+                
+                div.innerHTML = `
+                    <div class="history-entry__title">${title}</div>
+                    <div class="history-entry__stats">
+                        <span>Score: ${Math.round(recencyScore * 100)}%</span>
+                        <span>Used: ${entry.activationCount}x</span>
+                        <span>Age: ${timeSince}m</span>
+                        <span>${ageCategory}</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function changeActiveWindow(newActiveIndex) {
+            const now = currentTime;
+            
+            // Update window states
+            windows.forEach((window, index) => {
+                window.active = (index === newActiveIndex);
+            });
+            
+            // Update history for new active window
+            const newActiveWindow = windows[newActiveIndex];
+            if (newActiveWindow) {
+                const existing = windowHistory.get(newActiveWindow.title);
+                windowHistory.set(newActiveWindow.title, {
+                    title: newActiveWindow.title,
+                    lastActiveTime: now,
+                    activationCount: (existing?.activationCount || 0) + 1
+                });
+            }
+            
+            renderWindows();
+        }
+
+        function simulateNormalUsage() {
+            const patterns = [
+                () => changeActiveWindow(1), // GitHub
+                () => changeActiveWindow(0), // VS Code
+                () => changeActiveWindow(3), // YouTube
+                () => changeActiveWindow(0), // VS Code
+                () => changeActiveWindow(2), // Discord
+                () => changeActiveWindow(0)  // VS Code
+            ];
+            
+            let step = 0;
+            const interval = setInterval(() => {
+                if (step < patterns.length) {
+                    patterns[step]();
+                    currentTime += 30000; // Advance time by 30 seconds
+                    step++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 1000);
+        }
+
+        function simulateHeavyUsage() {
+            let changeCount = 0;
+            const maxChanges = 10;
+            
+            const heavyInterval = setInterval(() => {
+                const randomIndex = Math.floor(Math.random() * windows.length);
+                changeActiveWindow(randomIndex);
+                currentTime += 15000; // Advance time by 15 seconds
+                
+                changeCount++;
+                if (changeCount >= maxChanges) {
+                    clearInterval(heavyInterval);
+                }
+            }, 600);
+        }
+
+        function simulateSporadicUsage() {
+            const sporadicPattern = [
+                { delay: 2000, action: () => changeActiveWindow(4) }, // Figma
+                { delay: 5000, action: () => { currentTime += 300000; renderWindows(); } }, // 5 min gap
+                { delay: 1000, action: () => changeActiveWindow(5) }, // Terminal
+                { delay: 3000, action: () => { currentTime += 600000; renderWindows(); } }, // 10 min gap
+                { delay: 1000, action: () => changeActiveWindow(0) }  // VS Code
+            ];
+            
+            let step = 0;
+            function executeNext() {
+                if (step < sporadicPattern.length) {
+                    const { delay, action } = sporadicPattern[step];
+                    setTimeout(() => {
+                        action();
+                        step++;
+                        executeNext();
+                    }, delay);
+                }
+            }
+            executeNext();
+        }
+
+        function addAgedWindow() {
+            const newWindow = {
+                title: `Legacy App ${windows.length + 1}`,
+                active: false,
+                isBrowser: false
+            };
+            
+            windows.push(newWindow);
+            
+            // Add very old history entry
+            windowHistory.set(newWindow.title, {
+                title: newWindow.title,
+                lastActiveTime: currentTime - 7200000, // 2 hours ago
+                activationCount: 1
+            });
+            
+            renderWindows();
+        }
+
+        function resetDemo() {
+            currentTime = Date.now();
+            windows.forEach((window, index) => {
+                window.active = (index === 0);
+            });
+            initializeHistory();
+            renderWindows();
+        }
+
+        // Initialize
+        initializeHistory();
+        renderWindows();
+
+        // Auto-advance time periodically to show aging effect
+        setInterval(() => {
+            currentTime += 60000; // Advance by 1 minute
+            renderWindows();
+        }, 5000);
+
+        console.log('✅ Receding History Effect system loaded');
+        console.log('🎯 Test different usage patterns to see history effects');
+        console.log('📊 Watch how window aging affects visual hierarchy');
+    </script>
+</body>
+</html>
