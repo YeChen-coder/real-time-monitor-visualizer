@@ -5,12 +5,10 @@ A beautiful real-time window detection and visualization system designed for OBS
 ## 🖼️ Preview
 
 ### Web Interface Demo
-<!-- Insert web interface screenshot -->
-*Add web interface screenshot here*
+<img src="pictures/webpage.png" width="600" alt="Web Page Effect Demo">
 
 ### OBS Source Effect Demo  
-<!-- Insert OBS/streaming effect screenshot -->
-*Add OBS source usage effect screenshot here*
+<img src="pictures/obspicture.png" width="600" alt="OBS Source Effect Demo">
 
 ## ✨ Core Features
 
