@@ -9,6 +9,7 @@ interface WindowInfo {
   window_type: 'application' | 'browser';
   browser_name?: string;
   tab_title?: string;
+  process_name?: string;
 }
 
 interface WindowHistoryEntry {
@@ -175,12 +176,33 @@ const StackLayout: React.FC<StackLayoutProps> = ({ windows, maxVisibleWindows = 
       const historyBonus = recencyScore * 0.05; // Up to 5% size bonus for recent windows
       const scale = Math.max(0.6, 1 - baseScaleReduction + historyBonus);
       
-      // History-enhanced offset calculation (more recent = closer to center)
-      const baseOffsetX = 40;
-      const baseOffsetY = 30;
-      const historyMultiplier = 1 + (1 - recencyScore) * 0.5; // Less recent = more offset
-      const offsetX = stackPosition * baseOffsetX * (1 + stackPosition * 0.1) * historyMultiplier;
-      const offsetY = stackPosition * baseOffsetY * (1 + stackPosition * 0.05) * historyMultiplier;
+      // Enhanced vertical-focused layout for narrow, tall application scenarios
+      // Prioritize vertical distribution over horizontal spread
+      const rowHeight = 75; // Slightly more compact vertical spacing
+      const colWidth = 120; // Reduced horizontal spacing for narrower layout
+      
+      // Calculate grid position optimized for vertical layout (2 cards per row max)
+      const row = Math.floor(stackPosition / 2); // Only 2 cards per row for more vertical layout
+      const col = stackPosition % 2;
+      
+      // Base grid positioning with reduced horizontal spread
+      let baseOffsetX = (col - 0.5) * colWidth; // Center between two columns: -60px and +60px
+      let baseOffsetY = row * rowHeight;
+      
+      // Add vertical-focused staggered offset
+      const staggerOffsetX = (stackPosition % 2 === 0 ? -1 : 1) * (15 + stackPosition * 8); // Reduced horizontal variation
+      const staggerOffsetY = (stackPosition % 3 === 0 ? -1 : 1) * (35 + stackPosition * 15); // Slightly reduced vertical variation for more density
+      
+      // Add additional vertical randomness for natural flow, but more compact
+      const verticalRandomness = Math.sin(stackPosition * 1.4) * 35 + Math.cos(stackPosition * 0.9) * 25;
+      
+      // Minimal horizontal rotation offset to keep cards more centered
+      const rotationOffset = Math.sin(stackPosition * 0.5) * 15; // Reduced horizontal drift
+      
+      // History-enhanced positioning (more recent = less scattered)
+      const historyMultiplier = 0.8 + (1 - recencyScore) * 0.5;
+      const offsetX = (baseOffsetX + staggerOffsetX + rotationOffset) * historyMultiplier;
+      const offsetY = (baseOffsetY + staggerOffsetY + verticalRandomness) * historyMultiplier;
       
       // History-enhanced opacity (more recent = more visible)
       const baseOpacityReduction = Math.min(stackPosition * 0.15, 0.6);
@@ -306,9 +328,11 @@ const StackLayout: React.FC<StackLayoutProps> = ({ windows, maxVisibleWindows = 
               }`}
               style={{
                 zIndex: window.zIndex,
-                transform: `translate(${window.offsetX}px, ${window.offsetY}px) scale(${window.scale})`,
+                transform: `translate(-50%, -50%) translate(${window.offsetX}px, ${window.offsetY}px) scale(${window.scale}) rotate(${window.active ? 0 : Math.sin(index * 1.3) * 12 + Math.cos(index * 0.7) * 6}deg)`,
                 opacity: window.opacity,
                 position: 'absolute',
+                left: '50%',
+                top: '50%',
                 transition: window.isTransitioning 
                   ? `all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${window.animationDelay}ms`
                   : 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -322,6 +346,7 @@ const StackLayout: React.FC<StackLayoutProps> = ({ windows, maxVisibleWindows = 
                 windowType={window.window_type}
                 browserName={window.browser_name}
                 tabTitle={window.tab_title}
+                processName={window.process_name}
                 className={`${window.active ? 'window-card--stack-active' : 'window-card--stack-inactive'} ${
                   !window.active ? historyClass : ''
                 }`}

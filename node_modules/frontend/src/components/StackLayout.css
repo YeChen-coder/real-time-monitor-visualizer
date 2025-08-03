@@ -3,7 +3,7 @@
 .stack-layout {
   position: relative;
   width: 100%;
-  min-height: 500px;
+  min-height: 800px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -17,28 +17,39 @@
 
 .stack-layout__container {
   position: relative;
-  width: 400px;
-  height: 400px;
+  width: 500px;
+  height: 700px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: radial-gradient(ellipse at center, 
+    rgba(138, 43, 226, 0.05) 0%,
+    rgba(30, 144, 255, 0.03) 25%,
+    rgba(0, 255, 127, 0.02) 50%,
+    rgba(255, 20, 147, 0.03) 75%,
+    rgba(255, 165, 0, 0.05) 100%
+  );
+  border-radius: 24px;
+  overflow: visible;
 }
 
-/* Window wrapper for absolute positioning */
+/* Enhanced window wrapper with 3D depth effects */
 .stack-layout__window-wrapper {
   position: absolute;
-  left: 50%;
-  top: 50%;
   transform-origin: center center;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   
-  /* Performance optimizations */
+  /* Enhanced 3D performance optimizations */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
   contain: layout style paint;
+  
+  /* Add depth shadows for stacking effect */
+  filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.1));
+  -webkit-filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.1));
 }
 
 /* Enhanced animation states */
@@ -72,6 +83,8 @@
 
 /* Active window positioning (centered, full size) */
 .stack-layout__window-wrapper--active {
+  left: 50% !important;
+  top: 50% !important;
   transform: translate(-50%, -50%) scale(1) !important;
   z-index: 1000 !important;
   opacity: 1 !important;
@@ -80,17 +93,21 @@
 /* Inactive window positioning */
 .stack-layout__window-wrapper--inactive {
   transform-origin: center center;
+  left: 50%;
+  top: 50%;
 }
 
-/* WindowCard modifications for stack layout */
+/* Enhanced WindowCard modifications for artistic stack layout */
 .stack-layout .window-card--stack-active {
-  /* Enhanced styling for active window in stack */
+  /* Enhanced styling for active window in stack with colorful glow */
   box-shadow: 
-    0 20px 60px rgba(59, 130, 246, 0.25),
-    0 12px 32px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  border-width: 2px;
-  border-color: rgba(59, 130, 246, 0.4);
+    0 30px 80px rgba(138, 43, 226, 0.3),
+    0 20px 60px rgba(30, 144, 255, 0.25),
+    0 15px 40px rgba(0, 255, 127, 0.2),
+    0 10px 25px rgba(255, 20, 147, 0.18),
+    inset 0 2px 0 rgba(255, 255, 255, 0.6);
+  border-width: 3px;
+  transform: perspective(1000px) rotateX(5deg) rotateY(-2deg);
 }
 
 .stack-layout .window-card--stack-inactive {
@@ -159,16 +176,23 @@
   font-weight: 500;
 }
 
-/* Responsive design */
+/* Enhanced responsive design for vertical-focused layout */
+@media (max-width: 1024px) {
+  .stack-layout__container {
+    width: 450px;
+    height: 700px;
+  }
+}
+
 @media (max-width: 768px) {
   .stack-layout {
     padding: 20px 10px;
-    min-height: 400px;
+    min-height: 800px;
   }
   
   .stack-layout__container {
-    width: 320px;
-    height: 320px;
+    width: 400px;
+    height: 600px;
   }
   
   /* Reduce offsets for smaller screens */
@@ -185,8 +209,12 @@
 
 @media (max-width: 480px) {
   .stack-layout__container {
-    width: 280px;
-    height: 280px;
+    width: 350px;
+    height: 500px;
+  }
+  
+  .stack-layout {
+    min-height: 600px;
   }
 }
 

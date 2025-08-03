@@ -4,6 +4,7 @@
 # Window detection dependencies
 pygetwindow>=0.0.9
 pywin32>=306
+psutil>=5.9.0
 
 # WebSocket server dependencies
 websockets>=11.0.0

@@ -8,8 +8,10 @@
       "Bash(timeout 10 npm run dev)",
       "Bash(pip install:*)",
       "Bash(timeout:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": []
-  }
+  },
+  "$schema": "https://json.schemastore.org/claude-code-settings.json"
 }

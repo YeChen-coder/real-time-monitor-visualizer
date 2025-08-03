@@ -9,7 +9,78 @@ import json
 import time
 import websockets
 import pygetwindow as gw
+import psutil
+import win32gui
+import win32process
 from typing import List, Optional, Set
+
+
+def get_process_name_from_window_title(window_title: str) -> Optional[str]:
+    """
+    Get the process name associated with a window by finding its window handle.
+    
+    Args:
+        window_title (str): The title of the window
+        
+    Returns:
+        Optional[str]: Process name (e.g., 'notion.exe') or None if not found
+    """
+    try:
+        # Find window handle by title
+        hwnd = win32gui.FindWindow(None, window_title)
+        if hwnd == 0:
+            return None
+            
+        # Get process ID from window handle
+        _, process_id = win32process.GetWindowThreadProcessId(hwnd)
+        
+        # Get process info using psutil
+        try:
+            process = psutil.Process(process_id)
+            return process.name()
+        except psutil.NoSuchProcess:
+            return None
+            
+    except Exception as e:
+        # Fallback: try to find process by scanning all processes
+        try:
+            return get_process_name_fallback(window_title)
+        except Exception:
+            return None
+
+
+def get_process_name_fallback(window_title: str) -> Optional[str]:
+    """
+    Fallback method to find process name by checking if window title contains known app patterns.
+    
+    Args:
+        window_title (str): The title of the window
+        
+    Returns:
+        Optional[str]: Estimated process name or None
+    """
+    # Known process name mappings for common applications
+    process_patterns = {
+        'notion': ['notion', 'breakthrough method', 'bmad'],
+        'clickup': ['clickup', 'planner', 'clair workspace'],
+        'code': ['visual studio code', 'vscode'],
+        'chrome': ['google chrome', 'chrome'],
+        'msedge': ['microsoft edge', 'edge'],
+        'firefox': ['mozilla firefox', 'firefox'],
+        'discord': ['discord'],
+        'slack': ['slack'],
+        'figma': ['figma'],
+        'spotify': ['spotify'],
+        'zoom': ['zoom'],
+    }
+    
+    title_lower = window_title.lower()
+    for process_name, patterns in process_patterns.items():
+        for pattern in patterns:
+            if pattern in title_lower:
+                return f"{process_name}.exe"
+    
+    return None
 
 
 def is_browser_window(title: str) -> bool:
@@ -97,13 +168,17 @@ def get_all_visible_windows() -> List[dict]:
         for window in all_windows:
             # Filter out windows with empty titles or minimized windows
             if window.title.strip() and window.visible and not window.isMinimized:
+                # Get process name for this window
+                process_name = get_process_name_from_window_title(window.title)
+                
                 window_info = {
                     'title': window.title,
                     'visible': window.visible,
                     'minimized': window.isMinimized,
                     'active': False,  # Will be set by active window detection
                     'is_browser': False,
-                    'window_type': 'application'
+                    'window_type': 'application',
+                    'process_name': process_name
                 }
                 
                 # Check if this is a browser window
